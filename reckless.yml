@@ -1,0 +1,28 @@
+name: Build Reckless (generic)
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: codedeliveryservice/Reckless
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install clang (needed for tablebase support)
+        run: sudo apt-get update && sudo apt-get install -y clang
+
+      - name: Build
+        run: cargo build --release
+        env:
+          RUSTFLAGS: "-C target-cpu=x86-64-v2"
+
+      - name: Check it starts
+        run: printf 'uci\nquit\n' | ./target/release/reckless
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: reckless-linux-generic
+          path: target/release/reckless
